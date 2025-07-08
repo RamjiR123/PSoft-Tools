@@ -6,18 +6,21 @@ import { ThreeDots } from "react-loader-spinner";
 import sympyParser from "../lib/SympyParser";
 
 export default function ForwardReasoning() {
+    //default values when entering site
     const [data, setData] = useState("");
     const [code, setCode] = useState("{x>0 && y>0} y = 2;");
     const [loading, setLoading] = useState(false);
 
+    //actions when user clicks clear button
     const handleClickClear = () => {
         setData("");
         //setCode("// input code");
     };
 
+    //actions when user clicks forward reasoning button
     const handleReasoning = () => {
         setLoading(true);
-        let payload: string;
+        let payload: string; //input statement for python code
         try {
             const { pre, stmt } = sympyParser(code);
             payload = `{${pre}} ${stmt}`;
@@ -28,9 +31,10 @@ export default function ForwardReasoning() {
             return;
         }
 
+        //sending payload to the python code
         post("http://localhost:3000/forward", payload)
             .then((response) => {
-                setData(response);
+                setData(response); //expected output
             })
             .catch((error) => {
                 console.error("Forward-reasoning error:", error);
@@ -42,7 +46,7 @@ export default function ForwardReasoning() {
     };
 
     const handleEditorChange = (value: string | undefined) => {
-        if (value !== undefined) {
+        if (value) {
             setCode(value);
         }
     };

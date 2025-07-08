@@ -13,10 +13,12 @@ interface ErrorObject {
 }
 
 export default function Index() {
+   //default values when entering site
    const [data, setData] = useState("");
    const [code, setCode] = useState("// Please enter dafny code below and delete this comment!");
    const [loading, setLoading] = useState(false);
 
+   //actions when user clicks verify button
    const handleVerify = () => {
       setLoading(true);
       post("http://localhost:3000/verify", code)
@@ -61,6 +63,7 @@ export default function Index() {
          });
    };
 
+   //actions when user clicks run button
    const handleRun = () => {
       setLoading(true);
       post("http://localhost:3000/run", code)
@@ -73,11 +76,13 @@ export default function Index() {
          });
    };
 
+   //actions when user clicks clear button
    const handleClickClear = () => {
       setData("");
       //setCode("// input code");
    };
 
+   
    const handleEditorChange = (value: string | undefined) => {
       if (value) {
          //console.log(value);

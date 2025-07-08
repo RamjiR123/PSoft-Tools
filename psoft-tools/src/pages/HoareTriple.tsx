@@ -8,10 +8,12 @@ import dafnyParser from "../lib/DafnyParser";
 //Create Routing File
 
 export default function HoareTriple() {
+    //default values when entering site
     const [data, setData] = useState("");
     const [code, setCode] = useState("{x == 1}\nx = x + 1;\n{x == 2}");
     const [loading, setLoading] = useState(false);
 
+    //actions when user clicks verify triple button
     const handleVerify = () => {
         setLoading(true);
         const dafnyCode = dafnyParser(code.replace(/\r\n/g, "\n"));
@@ -26,6 +28,7 @@ export default function HoareTriple() {
             });
     };
 
+    //actions when user clicks clear button
     const handleClickClear = () => {
         setData("");
         //setCode("// input code");
