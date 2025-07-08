@@ -50,7 +50,7 @@ export default function HoareTriple() {
                 <div style={{ width: "50%", justifyContent: "left" }}>
 
                     <Editor height="92vh" width="50vw" onChange={handleEditorChange} defaultLanguage="java"
-                        defaultValue={`{x == 1}\nx = x + 1;\n{x == 2}`} />
+                        defaultValue={`// Input should be in the following format:\n// {precondition}\n// code\n// {postcondition}`} />
                 </div>
                 <div className="flex flex-col justify-center relative pl-8">
                     <div className=" flex-grow" style={{ whiteSpace: "pre", textAlign: "left" }}>

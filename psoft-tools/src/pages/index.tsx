@@ -102,6 +102,7 @@ export default function Index() {
                      width: "50vw",
                      onChange: handleEditorChange,
                      defaultLanguage: "dafny",
+                     defaultValue: "// Please enter dafny code below and delete this comment!"
                   }}
                />
             </div>
