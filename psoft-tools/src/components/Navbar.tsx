@@ -14,12 +14,11 @@ export default function Navbar() {
 
         //to automatically adjust to the current semester
         const today: Date = new Date();
-        const todayStr = today.toLocaleString('en-US');
         let semester = "https://www.cs.rpi.edu/academics/courses/"
-        if(today.getMonth() < 4 && today.getDate() > 10)
+        if(today.getMonth() <= 4 && today.getDate() >= 10)
             semester += "spring";
 
-        else if(today.getMonth()>7 && today.getDate() > 22)
+        else if(today.getMonth()>=7 && today.getDate() >= 22)
             semester += "fall";
 
         else
