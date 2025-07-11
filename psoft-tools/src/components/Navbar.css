@@ -1,46 +1,49 @@
+
+/* navigation bar */
 .navbar {
-    position: absolute;
-    display: flex;
-    top: 0;
-    left: 0;
-    min-width: 100%;
-    height: 50px;
-    justify-content: flex-start;
-    background-color: #158cba;
-
-    border-style: solid;
-    border-width: 0 0px 4px 0px;
-    border-color: #137ea7;
+    position: absolute; /* puts it at the top of the webpage */
+    display: flex; /* formats all link in a row */
+    top: 0; /* sets the location */
+    left: 0; /* also sets the location */
+    min-width: 100%; /* makes it span the entire webpage */
+    height: 50px; /* sets how far down the webpage it will span from the top */
+    justify-content: flex-start; /* aligns links to the left */
+    background-color: #158cba; /* sets background color */
+    border-style: solid; /* makes it non-transparent */
+    border-width: 0 0px 4px 0px; /* adds a bottom border */
+    border-color: #137ea7; /* sets bottom border color */
 }
 
-
+/* logo */
 .logo_ {
-    padding-left: 8px;
-    z-index: 2;
+    padding-left: 8px; /* sets location from left */
+    z-index: 2; /* sits above other elements */
 
 }
 
+/* links on webpage container */
 .options {
-    display: flex;
-    overflow: hidden;
-    justify-content: left;
+    display: flex; /* puts them in a row */
+    overflow: hidden; /* hides any overlap */
+    justify-content: left; /* aligns all links to left */
 
 }
 
+/* links on webpage */
 .options a {
     display: inline-flex;
-    color: #ced4da;
-    text-align: center;
-    padding: 15px 18px;
+    color: #ced4da; /* sets text color */
+    text-align: center; /* centers text in the container */
+    padding: 15px 18px; /* area around text that is clickable */
     font-size: small;
     text-decoration: none;
     transition: color 0.3s ease, text-decoration 0.3s ease;
 }
 
 .options a:hover {
-    color: #f0f0f0;
+    color: #f0f0f0; /* if user's mouse hovers over container */
 }
 
 .options a.active {
-    color: #000000;
+    color: #000000; /* if the container is the active webpage, then changes color to indicate that */
 }
