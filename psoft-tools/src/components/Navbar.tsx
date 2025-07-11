@@ -11,8 +11,23 @@ export default function Navbar() {
 
     const handleMouseUp = () => {
         setIsImageHighlighted(false);
-        window.location.href =
-            "https://www.cs.rpi.edu/academics/courses/summer24/csci2600/";
+
+        //to automatically adjust to the current semester
+        const today: Date = new Date();
+        const todayStr = today.toLocaleString('en-US');
+        let semester = "https://www.cs.rpi.edu/academics/courses/"
+        if(today.getMonth() < 4 && today.getDate() > 10)
+            semester += "spring";
+
+        else if(today.getMonth()>7 && today.getDate() > 22)
+            semester += "fall";
+
+        else
+            semester += "summer";
+
+        semester += today.getFullYear().toString().substring(2);
+        semester += "/csci2600/";
+        window.location.href = semester;
     };
 
     return (
@@ -52,6 +67,9 @@ export default function Navbar() {
                     </Link>
                     <Link to="/DesignPatterns">
                         Design Patterns
+                    </Link>
+                    <Link to="/CFGCanvas">
+                        CFG
                     </Link>
 
                 </div>
