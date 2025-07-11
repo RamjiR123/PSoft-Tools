@@ -40,3 +40,7 @@
 .options a:hover {
     color: #f0f0f0;
 }
+
+.options a.active {
+    color: #000000;
+}
