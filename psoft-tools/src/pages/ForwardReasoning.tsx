@@ -3,12 +3,12 @@ import { Editor } from "@monaco-editor/react";
 import { useState } from "react";
 import { post } from "../lib/api";
 import { ThreeDots } from "react-loader-spinner";
-import sympyParser from "../lib/SympyParser";
+import { sympyParserForward } from "../lib/SympyParser";
 
 export default function ForwardReasoning() {
     //default values when entering site
     const [data, setData] = useState("");
-    const [code, setCode] = useState("{x>0 && y>0} y = 2;");
+    const [code, setCode] = useState("");
     const [loading, setLoading] = useState(false);
 
     //actions when user clicks clear button
@@ -22,7 +22,7 @@ export default function ForwardReasoning() {
         setLoading(true);
         let payload: string; //input statement for python code
         try {
-            const { pre, stmt } = sympyParser(code);
+            const { pre, stmt } = sympyParserForward(code);
             payload = `{${pre}} ${stmt}`;
         } catch (e: any) {
             console.error("Parse error:", e);
