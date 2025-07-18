@@ -9,7 +9,7 @@ Provides an environment to verify and run Dafny code.
 Provides an environment to verify Hoare Triples. This is accomplished by translating the given, Java-formatted code into Dafny code.
 ### Forward Reasoning
 Provides an environment to carry out Forward Reasoning from a given precondition and block of Java-formatted code.
-### Backwards Reasoning *(Under Development)*
+### Backwards Reasoning
 Provides an environment to carry out Backward Reasoning from a given postcondition and block of Java-formatted code.
 ### Control Flow Graphs *(Under Development)*
 Provides a tool that generates a control-flow graph from given Java code.
