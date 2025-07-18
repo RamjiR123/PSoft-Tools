@@ -3,53 +3,71 @@ import { Editor } from "@monaco-editor/react";
 import { useState } from "react";
 import { post } from "../lib/api";
 import { ThreeDots } from "react-loader-spinner";
+import { sympyParserBackward } from "../lib/SympyParser";
 
 export default function BackwardReasoning() {
+    //default values when entering site
     const [data, setData] = useState("");
     const [code, setCode] = useState("");
     const [loading, setLoading] = useState(false);
 
+    //actions when user clicks clear button
     const handleClickClear = () => {
         setData("");
-        setCode("// input code");
+        //setCode("");
     };
 
+    //actions when user clicks backward reasoning button
     const handleReasoning = () => {
         setLoading(true);
-        console.log(code);
-        post("http://localhost:3000/backward-reasoning", code)
+        let payload: string;
+        try {
+            const { stmt, post: postcond } = sympyParserBackward(code);
+            payload = `${stmt} {${postcond}}`;
+        } catch (e: any) {
+            console.error("Parse error:", e);
+            setData(e.message);
+            setLoading(false);
+            return;
+        }
+
+        post("http://localhost:3000/backward", payload)
             .then((response) => {
-                setLoading(false);
-                console.log(response);
                 setData(response);
             })
             .catch((error) => {
-                console.error("error: ", error);
+                console.error("Backward-reasoning error:", error);
+                setData(`Error: ${error}`);
+            })
+            .finally(() => {
+                setLoading(false);
             });
-    }
+    };
+
     const handleEditorChange = (value: string | undefined) => {
-        if (value) {
-            //console.log(value);
+        if (value !== undefined) {
             setCode(value);
-            //console.log(code);
         }
     };
+
     return (
         <div>
-            <div>
-                <Navbar />
-            </div>
+            <Navbar />
             <div
                 className="screen"
                 style={{ paddingTop: "50px", width: "100%", overflow: "hidden" }}
             >
                 <div style={{ width: "50%", justifyContent: "left" }}>
-
-                    <Editor height="92vh" width="50vw" onChange={handleEditorChange} defaultLanguage="dafny"
-                        defaultValue="// Input should be in the format 'code {postcondition}'" />
+                    <Editor
+                        height="92vh"
+                        width="50vw"
+                        onChange={handleEditorChange}
+                        defaultLanguage="java"
+                        defaultValue="// Input should be in the format 'statement {postcondition}'"
+                    />
                 </div>
-                <div className="flex flex-col  relative pl-8 ">
-                    <div className=" flex-grow" style={{ whiteSpace: "pre", textAlign:"left"}}>
+                <div className="flex flex-col relative pl-8">
+                    <div className="flex-grow" style={{ whiteSpace: "pre-line", textAlign: "left" }}>
                         {loading ? (
                             <ThreeDots color="gray" height={100} width={100} />
                         ) : (
@@ -65,4 +83,3 @@ export default function BackwardReasoning() {
         </div>
     );
 }
-
