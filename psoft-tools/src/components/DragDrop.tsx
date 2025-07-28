@@ -5,7 +5,7 @@ import {
   useNodesState,
   useEdgesState,
   useReactFlow,
-  getNodesBounds, 
+  getNodesBounds,
   getViewportForBounds,
   NodeTypes,
   type Edge,
@@ -28,21 +28,30 @@ export default function DragDrop() {
       position: { x: 250, y: 5 },
     },
   ];
+
   const nodeTypes: NodeTypes = {
     shape: ShapeNode,
   };
+
   let id = 0;
   const getId = () => `dndnode_${id++}`;
   const reactFlowWrapper = useRef(null);
+
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
+  // 1) Renamed onEdgesChange -> defaultOnEdgesChange
+  const [edges, setEdges, defaultOnEdgesChange] = useEdgesState<Edge>([]);
+
   const { screenToFlowPosition } = useReactFlow();
   const reactFlowInstance = useReactFlow();
   const { undo, redo, canUndo, canRedo, takeSnapshot } = useUndoRedo();
 
+  // 2) Snapshot before creating a new edge
   const onConnect = useCallback(
-    (params: any) => setEdges((eds) => addEdge(params, eds)),
-    []
+    (params: any) => {
+      takeSnapshot();
+      setEdges((eds) => addEdge(params, eds));
+    },
+    [takeSnapshot, setEdges]
   );
 
   const onDragOver = useCallback(
@@ -112,7 +121,6 @@ export default function DragDrop() {
     marginTop: '50px',
   };
 
-  // <-- ONLY THIS HANDLER CHANGED:
   const onEdgeClick = (event: MouseEvent, edge: Edge) => {
     event.stopPropagation();
     setEdges((eds) =>
@@ -167,21 +175,19 @@ export default function DragDrop() {
   return (
     <div className="dndflow">
       <div className="reactflow-wrapper" ref={reactFlowWrapper} style={divStyle}>
-        <button className="download-btn" onClick={onClick}>
-          Download Image
-        </button>
-        <button className="undo-btn" onClick={undo}>
-          Undo
-        </button>
-        <button className="redo-btn" onClick={redo}>
-          Redo
-        </button>
+        <button className="download-btn" onClick={onClick}>Download Image</button>
+        <button className="undo-btn" onClick={undo}>Undo</button>
+        <button className="redo-btn" onClick={redo}>Redo</button>
         <ReactFlow
           nodes={nodes}
           edges={edges}
           onNodesChange={onNodesChange}
           nodeTypes={nodeTypes}
-          onEdgesChange={onEdgesChange}
+          // 3) Snapshot before deletions
+          onEdgesChange={(changes) => {
+            takeSnapshot();
+            defaultOnEdgesChange(changes);
+          }}
           onConnect={onConnect}
           onDrop={onDrop}
           onDragOver={onDragOver}
