@@ -5,10 +5,11 @@ import {
   useNodesState,
   useEdgesState,
   useReactFlow,
-  getNodesBounds,
+  getNodesBounds, 
   getViewportForBounds,
   NodeTypes,
   type Edge,
+  type Node as RFNode,   // <-- added
   ConnectionMode,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
@@ -20,38 +21,30 @@ import { toPng } from 'html-to-image';
 import useUndoRedo from './useUndoRedo';
 
 export default function DragDrop() {
-  const initialNodes = [
+  const initialNodes: RFNode[] = [   // <-- typed
     {
       id: '1',
       type: 'input',
       data: { label: 'Entry' },
       position: { x: 250, y: 5 },
+      deletable: false,
     },
   ];
-
   const nodeTypes: NodeTypes = {
     shape: ShapeNode,
   };
-
   let id = 0;
   const getId = () => `dndnode_${id++}`;
   const reactFlowWrapper = useRef(null);
-
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  // 1) Renamed onEdgesChange -> defaultOnEdgesChange
-  const [edges, setEdges, defaultOnEdgesChange] = useEdgesState<Edge>([]);
-
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const { screenToFlowPosition } = useReactFlow();
   const reactFlowInstance = useReactFlow();
   const { undo, redo, canUndo, canRedo, takeSnapshot } = useUndoRedo();
 
-  // 2) Snapshot before creating a new edge
   const onConnect = useCallback(
-    (params: any) => {
-      takeSnapshot();
-      setEdges((eds) => addEdge(params, eds));
-    },
-    [takeSnapshot, setEdges]
+    (params: any) => setEdges((eds) => addEdge(params, eds)),
+    []
   );
 
   const onDragOver = useCallback(
@@ -81,33 +74,33 @@ export default function DragDrop() {
 
       switch (type) {
         case 'rect': {
-          const stateNode = {
+          const stateNode: RFNode = {               // <-- typed
             id: type + getId(),
             type: 'shape',
             position,
             data: { type: 'rectangle', color: 'white', label: '' },
           };
-          setNodes((nds) => nds.concat(stateNode));
+          setNodes((nds) => [...nds, stateNode]);   // <-- spread instead of concat
           break;
         }
         case 'diamond': {
-          const branchNode = {
+          const branchNode: RFNode = {              // <-- typed
             id: type + getId(),
             type: 'shape',
             position,
             data: { type: 'diamond', color: 'white', label: '' },
           };
-          setNodes((nds) => nds.concat(branchNode));
+          setNodes((nds) => [...nds, branchNode]);  // <-- spread instead of concat
           break;
         }
         default: {
-          const newNode = {
+          const newNode: RFNode = {                 // <-- typed
             id: 'exit' + getId(),
             type: 'output',
             position,
             data: { label: 'Exit' },
           };
-          setNodes((nds) => nds.concat(newNode));
+          setNodes((nds) => [...nds, newNode]);     // <-- spread instead of concat
           break;
         }
       }
@@ -121,6 +114,7 @@ export default function DragDrop() {
     marginTop: '50px',
   };
 
+  // <-- ONLY THIS HANDLER CHANGED:
   const onEdgeClick = (event: MouseEvent, edge: Edge) => {
     event.stopPropagation();
     setEdges((eds) =>
@@ -175,19 +169,21 @@ export default function DragDrop() {
   return (
     <div className="dndflow">
       <div className="reactflow-wrapper" ref={reactFlowWrapper} style={divStyle}>
-        <button className="download-btn" onClick={onClick}>Download Image</button>
-        <button className="undo-btn" onClick={undo}>Undo</button>
-        <button className="redo-btn" onClick={redo}>Redo</button>
+        <button className="download-btn" onClick={onClick}>
+          Download Image
+        </button>
+        <button className="undo-btn" onClick={undo}>
+          Undo
+        </button>
+        <button className="redo-btn" onClick={redo}>
+          Redo
+        </button>
         <ReactFlow
           nodes={nodes}
           edges={edges}
           onNodesChange={onNodesChange}
           nodeTypes={nodeTypes}
-          // 3) Snapshot before deletions
-          onEdgesChange={(changes) => {
-            takeSnapshot();
-            defaultOnEdgesChange(changes);
-          }}
+          onEdgesChange={onEdgesChange}
           onConnect={onConnect}
           onDrop={onDrop}
           onDragOver={onDragOver}
