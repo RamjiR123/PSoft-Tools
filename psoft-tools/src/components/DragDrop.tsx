@@ -9,7 +9,7 @@ import {
   getViewportForBounds,
   NodeTypes,
   type Edge,
-  type Node as RFNode,   // <-- added
+  type Node as RFNode,
   ConnectionMode,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
@@ -21,7 +21,7 @@ import { toPng } from 'html-to-image';
 import useUndoRedo from './useUndoRedo';
 
 export default function DragDrop() {
-  const initialNodes: RFNode[] = [   // <-- typed
+  const initialNodes: RFNode[] = [
     {
       id: '1',
       type: 'input',
@@ -30,9 +30,7 @@ export default function DragDrop() {
       deletable: false,
     },
   ];
-  const nodeTypes: NodeTypes = {
-    shape: ShapeNode,
-  };
+  const nodeTypes: NodeTypes = { shape: ShapeNode };
   let id = 0;
   const getId = () => `dndnode_${id++}`;
   const reactFlowWrapper = useRef(null);
@@ -42,9 +40,32 @@ export default function DragDrop() {
   const reactFlowInstance = useReactFlow();
   const { undo, redo, canUndo, canRedo, takeSnapshot } = useUndoRedo();
 
+  const handleNodesChange = useCallback(
+    (changes: any) => {
+      if (changes?.some((c: any) => c.type === 'remove')) takeSnapshot();
+      onNodesChange(changes);
+    },
+    [onNodesChange, takeSnapshot]
+  );
+
+  const handleEdgesChange = useCallback(
+    (changes: any) => {
+      if (changes?.some((c: any) => c.type === 'remove')) takeSnapshot();
+      onEdgesChange(changes);
+    },
+    [onEdgesChange, takeSnapshot]
+  );
+
   const onConnect = useCallback(
-    (params: any) => setEdges((eds) => addEdge(params, eds)),
-    []
+    (params: any) =>
+      setEdges((eds) => {
+        takeSnapshot();
+        const cleared = eds.map((e) => ({ ...e, selected: false }));
+        const withNew = addEdge(params, cleared);
+        const lastIdx = withNew.length - 1;
+        return withNew.map((e, i) => (i === lastIdx ? { ...e, selected: true } : e));
+      }),
+    [takeSnapshot]
   );
 
   const onDragOver = useCallback(
@@ -66,41 +87,47 @@ export default function DragDrop() {
       const type = event.dataTransfer.getData('application/reactflow');
       if (!type) return;
 
-      const position = screenToFlowPosition({
-        x: event.clientX,
-        y: event.clientY,
-      });
+      const position = screenToFlowPosition({ x: event.clientX, y: event.clientY });
       takeSnapshot();
 
       switch (type) {
         case 'rect': {
-          const stateNode: RFNode = {               // <-- typed
+          const stateNode: RFNode = {
             id: type + getId(),
             type: 'shape',
             position,
             data: { type: 'rectangle', color: 'white', label: '' },
           };
-          setNodes((nds) => [...nds, stateNode]);   // <-- spread instead of concat
+          setNodes((nds) => [
+            ...nds.map((n) => ({ ...n, selected: false })),
+            { ...stateNode, selected: true },
+          ]);
           break;
         }
         case 'diamond': {
-          const branchNode: RFNode = {              // <-- typed
+          const branchNode: RFNode = {
             id: type + getId(),
             type: 'shape',
             position,
             data: { type: 'diamond', color: 'white', label: '' },
           };
-          setNodes((nds) => [...nds, branchNode]);  // <-- spread instead of concat
+          setNodes((nds) => [
+            ...nds.map((n) => ({ ...n, selected: false })),
+            { ...branchNode, selected: true },
+          ]);
           break;
         }
         default: {
-          const newNode: RFNode = {                 // <-- typed
+          const newNode: RFNode = {
             id: 'exit' + getId(),
             type: 'output',
             position,
             data: { label: 'Exit' },
           };
-          setNodes((nds) => [...nds, newNode]);     // <-- spread instead of concat
+          setNodes((nds) => [
+            ...nds.map((n) => ({ ...n, selected: false })),
+            { ...newNode, selected: true },
+          ]);
           break;
         }
       }
@@ -108,13 +135,8 @@ export default function DragDrop() {
     [screenToFlowPosition, setNodes, takeSnapshot]
   );
 
-  const divStyle: CSS.Properties = {
-    width: '1500px',
-    height: '1000px',
-    marginTop: '50px',
-  };
+  const divStyle: CSS.Properties = { width: '1500px', height: '1000px', marginTop: '50px' };
 
-  // <-- ONLY THIS HANDLER CHANGED:
   const onEdgeClick = (event: MouseEvent, edge: Edge) => {
     event.stopPropagation();
     setEdges((eds) =>
@@ -128,12 +150,7 @@ export default function DragDrop() {
           takeSnapshot();
           if (isTarget) newLabel = 'false';
         }
-        return {
-          ...ed,
-          data: { ...ed.data },
-          label: newLabel,
-          selected: isTarget,
-        };
+        return { ...ed, data: { ...ed.data }, label: newLabel, selected: isTarget };
       })
     );
   };
@@ -149,19 +166,16 @@ export default function DragDrop() {
   const onClick = () => {
     const nodesBounds = getNodesBounds(getNodes());
     const viewport = getViewportForBounds(nodesBounds, 1500, 1500, 0.5, 2, 0);
-    toPng(
-      document.querySelector('.react-flow__viewport') as HTMLElement,
-      {
-        backgroundColor: '#FFFFFF',
-        width: 1500,
-        height: 1500,
-        style: {
-          width: '1500px',
-          height: '1500px',
-          transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`,
-        },
-      }
-    ).then(downloadImage);
+    toPng(document.querySelector('.react-flow__viewport') as HTMLElement, {
+      backgroundColor: '#FFFFFF',
+      width: 1500,
+      height: 1500,
+      style: {
+        width: '1500px',
+        height: '1500px',
+        transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`,
+      },
+    }).then(downloadImage);
   };
 
   const conMode: ConnectionMode = ConnectionMode.Loose;
@@ -169,21 +183,15 @@ export default function DragDrop() {
   return (
     <div className="dndflow">
       <div className="reactflow-wrapper" ref={reactFlowWrapper} style={divStyle}>
-        <button className="download-btn" onClick={onClick}>
-          Download Image
-        </button>
-        <button className="undo-btn" onClick={undo}>
-          Undo
-        </button>
-        <button className="redo-btn" onClick={redo}>
-          Redo
-        </button>
+        <button className="download-btn" onClick={onClick}>Download Image</button>
+        <button className="undo-btn" onClick={undo}>Undo</button>
+        <button className="redo-btn" onClick={redo}>Redo</button>
         <ReactFlow
           nodes={nodes}
           edges={edges}
-          onNodesChange={onNodesChange}
+          onNodesChange={handleNodesChange}
           nodeTypes={nodeTypes}
-          onEdgesChange={onEdgesChange}
+          onEdgesChange={handleEdgesChange}
           onConnect={onConnect}
           onDrop={onDrop}
           onDragOver={onDragOver}
